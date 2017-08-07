@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #ifndef B_TREE_BTREE_H
 #define B_TREE_BTREE_H
@@ -13,16 +14,17 @@ typedef struct Cell
 {
     key_type key;
     void* data;
-    struct Cell *left_cell, *right_cell;
     struct Node *left_child, *right_child, *owner;
 } Cell;
 
 typedef struct Node
 {
     struct Node *parent;
-    struct Cell *first_cell;
+    Cell *cells;
     size_t min_size;
     size_t size;
+    bool is_leaf;
+    int (*compar)(const void *, const void *);
 } Node;
 
 
@@ -52,7 +54,7 @@ typedef struct Node
  * 5. If there are more than 1 Node left, repeats from step #1, otherwise there is a root element,
  *    which is put into @p root
  */
-int btree_init(Node **root, Cell **array, size_t array_size, size_t min_size,
+int btree_init(Node **root, Cell *array, size_t array_size, size_t min_size,
                size_t to_leave, int (*compar)(const void *, const void *));
 
 
@@ -63,7 +65,7 @@ int btree_init(Node **root, Cell **array, size_t array_size, size_t min_size,
  * @param key_value Value that desired Cell should contain as key value
  * @return Exit code: 0 if Cell was found, 1 otherwise
  */
-int btree_get_cell(Node *root, Cell **cell_ptr, key_type key_value);
+int btree_get_cell(Node *root, Cell *cell_ptr, key_type key_value);
 
 
 /**
@@ -81,5 +83,7 @@ int btree_replace_cell(Node *root, Cell **new_cell);
  * @param root Pointer to the pointer to root Node of tree (or subtree)
  */
 void btree_clean_node(Node **root);
+
+void btree_insert_cell(Node **root, Cell *new_cell);
 
 #endif //B_TREE_BTREE_H
